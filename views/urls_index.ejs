@@ -28,10 +28,10 @@
           </tr>
         </thead>
         <tbody>
-          <% Object.keys(urls).forEach((links) => { %>
+          <% Object.keys(urls).forEach((id) => { %>
             <tr>
-              <td><%= links %></td>
-              <td><%= urls[links] %></td>
+              <td><%= id %></td>
+              <td><%= urls[id] %></td>
             </tr>
           <% }); %>
         </tbody>
