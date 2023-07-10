@@ -15,23 +15,31 @@
       crossorigin="anonymous"
     />
 
-    <title>Registration - TinyApp</title>
+    <title>Login - TinyApp</title>
   </head>
 
   <body>
     <%- include('partials/_header') %>
 
     <main style="margin: 1em;">
-      <h3>Registration - TinyApp</h3>
-      <form method="POST" action="/register">
+      <h3>Login</h3>
+      <form method="POST" action="/login">
+        <div class="col">
+          <div class="row">
         <label for="email">Email</label>
-        <input type="email" name="email" id="email" />
-        <br />
+        <input type="email" class="form-control" name="email" id="email" />
+      </div>
+    </br>
+        <div class="row">
         <label for="password">Password</label>
-        <input type="password" name="password" id="password" />
-        <br />
-        <button type="submit">Register!</button>
-      </form>
+        <input type="password" class="form-control" name="password" id="password" />
+      </div>
+    </br>
+      <div class="row">
+        <button type="submit" class="btn btn-primary">login</button>
+        </div>
+      </div>
+    </form>
     </main>
     <!-- Bootstrap JS -->
     <script

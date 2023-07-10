@@ -4,7 +4,6 @@ const crypto = require("crypto");
 const morgan = require("morgan");
 const { getUserByEmail } = require("./helper");
 const { put } = require("request");
-const e = require("express");
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -98,11 +97,16 @@ app.post("/urls", (req, res) => {
     res.redirect(`/urls`);
 });
 
+app.get("/urls/new", (req, res) => {
+  const templateVars = {user: users[req.cookies.user_id]};
+  res.render("urls_new", templateVars);
+});
+
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id],
-    username: { user: users[req.cookies.user_id]},
+    user: { user: users[req.cookies.user_id]},
   };
   res.render("urls_show", templateVars);
 });
@@ -129,10 +133,7 @@ app.get("/u/:id", (req, res) => {
   res.redirect(urlDatabase[req.params.id]);
 });
 
-app.get("/urls/new", (req, res) => {
-  const templateVars = { user: users[req.cookies.user_id]};
-  res.render("urls_new");
-});
+
 
 
 // app.post("/urls", (req, res) => {
@@ -157,16 +158,36 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+app.get("/login", (req, res) => {
+  const templateVars = { user: users[req.cookies.user_id]};
+  res.render("login", templateVars);
+});
+
 app.post("/login", (req, res) => {
-  const username = { user: users[req.cookies.user_id]};
-  res.cookie("username", username);
+  let email = req.body.email;
+  let password = req.body.password;
+  let userId;
+  
+  const templateVars = { user: users[req.cookies.user_id]};
+  res.cookie("user_id", templateVars);
+
+if (!getUserByEmail(email, users)) {
+  return res.status(403).send("User not found"); 
+} else {
+  const user = getUserByEmail(email, users);
+    userId = user.id;
+    if (password !== user.password) {
+      res.status(403).send("Incorrect password!");
+}
+res.cookie("user_id", userId); 
   res.redirect("/urls");
+}
+
 });
 
 app.post("/logout", (req, res) => {
-  const username = { user: users[req.cookies.user_id]};
-  res.clearCookie("user", username);
-  res.redirect("/urls");
+  res.clearCookie("user_id");
+  res.redirect("/login");
 });
 
 
