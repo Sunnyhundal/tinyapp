@@ -2,7 +2,9 @@ const express = require("express");
 var cookieParser = require("cookie-parser");
 const crypto = require("crypto");
 const morgan = require("morgan");
+const { getUserByEmail } = require("./helper");
 const { put } = require("request");
+const e = require("express");
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -55,15 +57,30 @@ app.post("/register", (req, res) => {
   const randomBytes = crypto.randomBytes(32);
   const randomString = randomBytes.toString("hex");
   let userId = randomString;
-  
- users[userId] = {
-    id: userId,
-    email,
-    password
-  };
-  res.cookie("user_id", userId);
-  console.log(userId);
-  res.redirect('/urls');
+
+  const foundUser = getUserByEmail(email, users);
+  if (foundUser) {
+    return res.status(400).send(`User with email ${email} already exists`);
+  }
+  else if (password.length === 0) {
+    return res.status(400).send(`Please enter a valid password`);
+  }
+  else if (email.length === 0) {
+    return res.status(400).send(`Please enter a valid email`);
+  }else{
+    
+    users[userId] = {
+      id: userId,
+      email,
+      password
+    };
+    res.cookie("user_id", userId);
+    res.redirect('/urls');
+
+  }
+
+  console.log(users[userId]);
+
 });
 
 app.get("/urls", (req, res) => {
