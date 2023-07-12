@@ -1,11 +1,13 @@
-const urlsForUser = (id, database) => {
+const urlsForUser = (id, urlDatabase) => {
   const usersURLData = {};
   
-for (let shortURLS in database) {
-if (database[shortURLS].userID === id) {
-  usersURLData[shortURLS] === database[shortURLS];
+for (let shortURLS in urlDatabase) {
+if (urlDatabase[shortURLS].user === id) {
+  usersURLData[shortURLS] = urlDatabase[shortURLS];
+
 }
 }
+console.log("usersURLData: ", usersURLData);
 return usersURLData;
 };
 

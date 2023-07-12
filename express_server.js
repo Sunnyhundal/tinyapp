@@ -3,6 +3,7 @@ const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
 const { getUserByEmail } = require("./helper");
 const { generateRandomString } = require("./helper");
+const { urlsForUser } = require("./helper");
 const { put } = require("request");
 
 const app = express();
@@ -29,18 +30,19 @@ let users = {
     password: "123",
   },
 };
-// root path
+// Root page redirect to login page
 app.get("/", (req, res) => {
   res.redirect("/login");
 });
 
 app.get("/urls", (req, res) => {
   const user = req.cookies.user_id;
+  const visibleURL = urlsForUser(req.cookies.user_id, urlDatabase);
   if (!user) {
     res.redirect(401, "/login");
   } else {
     const templateVars = {
-      urls: urlDatabase,
+      urls: visibleURL,
       user: users[req.cookies.user_id]
     };
     res.render("urls_index", templateVars);
@@ -50,13 +52,13 @@ app.get("/urls", (req, res) => {
 app.post("/urls", (req, res) => {
   const user = req.cookies.user_id;
   if (!user) {
-    res.redirect(401, "/login");
+    res.status(401).send("Please login to create a new URL");
   } else {
     console.log(req.body);
     const shortUrl = generateRandomString();
     urlDatabase[shortUrl] = {
       urls: req.body.longURL,
-      user: user
+      user: users[req.cookies.user_id].id
     };
     urlDatabase[shortUrl].longURL = req.body.longURL;
     res.redirect(`/urls/${shortUrl}`);
@@ -73,7 +75,7 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
-
+// Routing for registration: If user is not logged in, they can register. If they are logged in, they are redirected to the urls page.
 app.get("/register", (req, res) => {
   const user = req.cookies.user_id
   
@@ -85,7 +87,7 @@ if (!user) {
 }
 
 });
-
+// Registration post logic to add new user to the users database. If the email or password is empty, the user will be redirected to an error page. If the email already exists, the user will be redirected to an error page.
 app.post("/register", (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
@@ -110,29 +112,50 @@ app.post("/register", (req, res) => {
 
   console.log(users[userId]);
 });
-
+//Shows page with shortURL and longURL and edit option.
 app.get("/urls/:id", (req, res) => {
-  const templateVars = {
-    id: req.params.id,
-    longURL: urlDatabase[req.params.id].longURL,
-    user: users[req.cookies.user_id]
-  };
-  console.log("console:", templateVars);
-  res.render("urls_show", templateVars);
+  const user = req.cookies.user_id;
+  if (urlDatabase[req.params.id]) {
+    if (urlDatabase[req.params.id].user === user) {
+      const templateVars = {
+        id: req.params.id,
+        longURL: urlDatabase[req.params.id].longURL,
+        user: users[req.cookies.user_id].id
+      };
+      console.log("console:", templateVars);
+      res.render("urls_show", templateVars);
+    } else {
+      res.status(401).send("Sorry, Only registered users can edit their URLs");
+    }
+  } else {
+    res.status(404).send("Whoops! you have entered an invalid link.");
+  }
 });
 
+
+// URL update post logic to update the URL in the database.
 app.post("/urls/:id/update", (req, res) => {
   console.log(req.params);
   urlDatabase[req.params.id].longURL = req.body.longURL;
   res.redirect(`/urls/${req.params.id}`);
 });
-
+// URL delete post logic to delete the URL from the database.
 app.post("/urls/:id/delete", (req, res) => {
-  console.log(req.params);
-  delete urlDatabase[req.params.id];
-  res.redirect(`/urls`);
+  const user = req.cookies.user_id;
+  if (urlDatabase[req.params.id]) {
+    if (urlDatabase[req.params.id].user === user) {
+      delete urlDatabase[req.params.id];
+      res.redirect(`/urls`);
+    } else {
+      res.status(401).send("Sorry, Only registered users can edit their URLs");
+    }
+  } else {
+    res.status(404).send("Whoops! you have entered an invalid link.");
+  }
+  
 });
 
+// Routing for shortURLs: If the shortURL does not exist, the user will be redirected to an error page. If the shortURL exists, the user will be redirected to the longURL.
 app.get("/u/:id", (req, res) => {
 if (urlDatabase[req.params.id].longURL) {
   res.redirect(urlDatabase[req.params.id].longURL);
@@ -142,7 +165,7 @@ if (urlDatabase[req.params.id].longURL) {
   
 });
 
-
+// Routing for login: If the user is not logged in, they will be redirected to the login page. If the user is logged in, they will be redirected to the urls page.
 app.get("/login", (req, res) => {
   const user = req.cookies.user_id;
 
@@ -155,6 +178,7 @@ app.get("/login", (req, res) => {
 
 });
 
+// Login post logic to check if the user exists in the database. If the user does not exist, they will be redirected to an error page. Checks if valid users email and password match. If the password does not match, the user will be redirected to an error page.
 app.post("/login", (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
@@ -176,7 +200,7 @@ app.post("/login", (req, res) => {
     res.redirect("/urls");
   }
 });
-
+// Logout post logic to clear the cookie and redirect the user to the login page.
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
   res.redirect("/login");
