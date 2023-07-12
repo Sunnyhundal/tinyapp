@@ -1,15 +1,20 @@
+// imports and requires for the server to run properly and to access the helper functions.
 const express = require("express");
 const cookieSession = require("cookie-session");
 const morgan = require("morgan");
 const bcrypt = require("bcryptjs");
-const { getUserByEmail } = require("./helper");
-const { generateRandomString } = require("./helper");
-const { urlsForUser } = require("./helper");
+const { getUserByEmail } = require("./helpers");
+const { generateRandomString } = require("./helpers");
+const { urlsForUser } = require("./helpers");
 const { put } = require("request");
+const e = require("express");
 
 const app = express();
 const PORT = 8080; // default port 8080
+
+//saltrounds for bcrypt to hash the password
 const saltRounds = 10;
+//gensaltSync for bcrypt to generate a salt
 const salt = bcrypt.genSaltSync(saltRounds);
 
 app.use(express.urlencoded({ extended: true }), cookieSession({name: "session",
@@ -17,7 +22,8 @@ keys: [generateRandomString()], maxAge: 24 * 60 * 60 * 1000 // cookie expires af
 }), morgan("dev"));
 
 app.set("view engine", "ejs");
-// Test database of URLs
+
+// Test database of URLs as an object since we are not using a database yet.
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -36,11 +42,13 @@ let users = {
     password: "123",
   },
 };
-// Root page redirect to login page
+
+// Root page redirect to login page.
 app.get("/", (req, res) => {
   res.redirect("/login");
 });
 
+// Renders the main page with the shortURL and longURL of the user. If user is not logged in, they are redirected to the login page.
 app.get("/urls", (req, res) => {
   const user = req.session.user_id;
   const visibleURL = urlsForUser(req.session.user_id, urlDatabase);
@@ -54,7 +62,7 @@ app.get("/urls", (req, res) => {
     res.render("urls_index", templateVars);
   }
 });
-
+// handles the creation of a new URL. If user is not logged in, they are asked to login. If user is logged in, they are redirected to the new URL page.
 app.post("/urls", (req, res) => {
   const user = req.session.user_id;
   if (!user) {
@@ -71,6 +79,7 @@ app.post("/urls", (req, res) => {
   }
 });
 
+// Renders page for new URL creation. If user is not logged in, they are redirected to the login page.
 app.get("/urls/new", (req, res) => {
   const user = req.session.user_id;
   if (!user) {
@@ -93,6 +102,7 @@ if (!user) {
 }
 
 });
+
 // Registration post logic to add new user to the users database. If the email or password is empty, the user will be redirected to an error page. If the email already exists, the user will be redirected to an error page.
 app.post("/register", (req, res) => {
   const email = req.body.email;
@@ -127,7 +137,7 @@ app.get("/urls/:id", (req, res) => {
       const templateVars = {
         id: req.params.id,
         longURL: urlDatabase[req.params.id].longURL,
-        user: users[req.session.user_id].id
+        user: users[req.session.user_id],
       };
       console.log("console:", templateVars);
       res.render("urls_show", templateVars);

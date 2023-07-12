@@ -17,14 +17,14 @@ const getUserByEmail = (email, users) => {
       return users[id];
     }
   }
-  return null;
+  return undefined;
 };
 
 function generateRandomString() {
   let shortUrl = "";
   const characters =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let i = 0; i <= 6; i++) {
+  for (let i = 0; i < 6; i++) {
     shortUrl += characters.charAt(
       Math.floor(Math.random() * characters.length)
     );
