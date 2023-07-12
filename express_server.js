@@ -68,7 +68,6 @@ app.post("/urls", (req, res) => {
   if (!user) {
     res.status(401).send("Please login to create a new URL");
   } else {
-    console.log(req.body);
     const shortUrl = generateRandomString();
     urlDatabase[shortUrl] = {
       urls: req.body.longURL,
@@ -127,7 +126,6 @@ app.post("/register", (req, res) => {
     res.redirect("/urls");
   }
 
-  console.log(users[userId]);
 });
 //Shows page with shortURL and longURL and edit option.
 app.get("/urls/:id", (req, res) => {
@@ -139,7 +137,6 @@ app.get("/urls/:id", (req, res) => {
         longURL: urlDatabase[req.params.id].longURL,
         user: users[req.session.user_id],
       };
-      console.log("console:", templateVars);
       res.render("urls_show", templateVars);
     } else {
       res.status(401).send("Sorry, only registered users can edit their URLs");
@@ -152,7 +149,6 @@ app.get("/urls/:id", (req, res) => {
 
 // URL update post logic to update the URL in the database.
 app.post("/urls/:id/update", (req, res) => {
-  console.log(req.params);
   urlDatabase[req.params.id].longURL = req.body.longURL;
   res.redirect(`/urls/${req.params.id}`);
 });
@@ -174,7 +170,7 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // Routing for shortURLs: If the shortURL does not exist, the user will be redirected to an error page. If the shortURL exists, the user will be redirected to the longURL.
 app.get("/u/:id", (req, res) => {
-  if (urlDatabase[req.params.id].longURL) {
+  if (urlDatabase[req.params.id]) {
     res.redirect(urlDatabase[req.params.id].longURL);
   } else {
     res.status(404).send("Whoops! you have entered an invalid link.");
@@ -211,7 +207,6 @@ app.post("/login", (req, res) => {
       res.status(403).send("Incorrect password!");
     }
     req.session.user_id = userId;
-    console.log("logging users: ",users);
     res.redirect("/urls");
   }
 });
