@@ -28,6 +28,7 @@
           <tr>
             <th scope="col">Short URL ID</th>
             <th scope="col">Long URL</th>
+            <th scope="col">user</th>
             <th scope="col">edit</th>
             <th scope="col">delete</th>
           </tr>
@@ -36,9 +37,16 @@
           <% Object.keys(urls).forEach((id) => { %>
             <tr>
               <td><%= id %></td>
-              <td><%= urls[id] %></td>
-              <td><form method="get" action="/urls/<%= id %>"><button type="submit" class="btn btn-outline-primary">Edit</button></form></td>
-              <td><form method="POST" action="/urls/<%= id %>/delete"><button type="submit" class="btn btn-outline-danger">Delete</button></form></td>
+              <td><%= urls[id].longURL %></td>
+              <td><%= urls[id].user %></td>
+              <td>
+                <form method="get" action="/urls/<%= id %>"><button type="submit"  class="btn btn-outline-primary">Edit</button>
+                </form>
+              </td>
+              <td>
+                <form method="POST" action="/urls/<%= id %>/delete"><button type="submit" class="btn btn-outline-danger">Delete</button>
+                </form>
+              </td>
             </tr>
           <% }); %>
         </tbody>
