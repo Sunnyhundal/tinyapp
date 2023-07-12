@@ -5,13 +5,15 @@ The goal of this project is to build a multipage application that helps demonstr
 
 ## Final Product
 
-!["screenshot description"](#)
-!["screenshot description"](#)
+!["Simple login page requesting email and password"](docs/login.png)
+!["Simple registration page requesting email and password"](docs/createAccount.png)
+!["Simple page showing shortened URLs and Regular URLS. Plus, edit and delete options"](docs/myUrls.png)
+!["Page to editUrls"](docs/editUrl.png)
+
 
 ## Dependencies
 
 - Node.js
-  - Crypto 
 - Express
 - EJS
 - bcryptjs
@@ -20,4 +22,4 @@ The goal of this project is to build a multipage application that helps demonstr
 ## Getting Started
 
 - Install all dependencies (using the `npm install` command).
-- Run the development web server using the `node express_server.js` command.
+- Run the development web server using the `node express_server.js` or  `npm start` commands.
