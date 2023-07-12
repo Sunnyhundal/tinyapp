@@ -1,6 +1,7 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
+const bcrypt = require("bcryptjs");
 const { getUserByEmail } = require("./helper");
 const { generateRandomString } = require("./helper");
 const { urlsForUser } = require("./helper");
@@ -8,6 +9,9 @@ const { put } = require("request");
 
 const app = express();
 const PORT = 8080; // default port 8080
+const saltRounds = 10;
+const salt = bcrypt.genSaltSync(saltRounds);
+
 app.use(express.urlencoded({ extended: true }), cookieParser(), morgan("dev"));
 
 app.set("view engine", "ejs");
@@ -89,9 +93,10 @@ if (!user) {
 });
 // Registration post logic to add new user to the users database. If the email or password is empty, the user will be redirected to an error page. If the email already exists, the user will be redirected to an error page.
 app.post("/register", (req, res) => {
-  let email = req.body.email;
-  let password = req.body.password;
-  let userId = generateRandomString();
+  const email = req.body.email;
+  const password = req.body.password;
+  const userId = generateRandomString();
+  const hashedPassword = bcrypt.hashSync(password, salt);
 
   const foundUser = getUserByEmail(email, users);
   if (foundUser) {
@@ -104,7 +109,7 @@ app.post("/register", (req, res) => {
     users[userId] = {
       id: userId,
       email: email,
-      password: password,
+      password: hashedPassword,
     };
     res.cookie("user_id", userId);
     res.redirect("/urls");
@@ -125,7 +130,7 @@ app.get("/urls/:id", (req, res) => {
       console.log("console:", templateVars);
       res.render("urls_show", templateVars);
     } else {
-      res.status(401).send("Sorry, Only registered users can edit their URLs");
+      res.status(401).send("Sorry, only registered users can edit their URLs");
     }
   } else {
     res.status(404).send("Whoops! you have entered an invalid link.");
@@ -147,10 +152,10 @@ app.post("/urls/:id/delete", (req, res) => {
       delete urlDatabase[req.params.id];
       res.redirect(`/urls`);
     } else {
-      res.status(401).send("Sorry, Only registered users can edit their URLs");
+      res.status(401).send("Sorry, only registered users can edit their URLs");
     }
   } else {
-    res.status(404).send("Whoops! you have entered an invalid link.");
+    res.status(404).send("Whoops! You have entered an invalid link.");
   }
   
 });
@@ -183,6 +188,7 @@ app.post("/login", (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
   let userId;
+ 
 
   const templateVars = { user: users[req.cookies.user_id] };
   res.cookie("user_id", templateVars);
@@ -192,7 +198,8 @@ app.post("/login", (req, res) => {
   } else {
     const user = getUserByEmail(email, users);
     userId = user.id;
-    if (password !== user.password) {
+    const passwordCheck = bcrypt.compareSync(password, user.password);
+    if (!passwordCheck) {
       res.status(403).send("Incorrect password!");
     }
     res.cookie("user_id", userId);
