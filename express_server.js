@@ -6,8 +6,8 @@ const bcrypt = require("bcryptjs");
 const { getUserByEmail } = require("./helpers");
 const { generateRandomString } = require("./helpers");
 const { urlsForUser } = require("./helpers");
-const { put } = require("request");
-const e = require("express");
+
+
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -18,7 +18,7 @@ const saltRounds = 10;
 const salt = bcrypt.genSaltSync(saltRounds);
 
 app.use(express.urlencoded({ extended: true }), cookieSession({name: "session",
-keys: [generateRandomString()], maxAge: 24 * 60 * 60 * 1000 // cookie expires after 24 hours
+  keys: [generateRandomString()], maxAge: 24 * 60 * 60 * 1000 // cookie expires after 24 hours
 }), morgan("dev"));
 
 app.set("view engine", "ejs");
@@ -92,14 +92,14 @@ app.get("/urls/new", (req, res) => {
 
 // Routing for registration: If user is not logged in, they can register. If they are logged in, they are redirected to the urls page.
 app.get("/register", (req, res) => {
-  const user = req.session.user_id
+  const user = req.session.user_id;
   
-if (!user) {
-  const templateVars = { user: users[user] };
-  res.render("register", templateVars);
-} else {
-  res.redirect("/urls");
-}
+  if (!user) {
+    const templateVars = { user: users[user] };
+    res.render("register", templateVars);
+  } else {
+    res.redirect("/urls");
+  }
 
 });
 
@@ -174,11 +174,11 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // Routing for shortURLs: If the shortURL does not exist, the user will be redirected to an error page. If the shortURL exists, the user will be redirected to the longURL.
 app.get("/u/:id", (req, res) => {
-if (urlDatabase[req.params.id].longURL) {
-  res.redirect(urlDatabase[req.params.id].longURL);
-} else {
-  res.status(404).send("Whoops! you have entered an invalid link.");
-}
+  if (urlDatabase[req.params.id].longURL) {
+    res.redirect(urlDatabase[req.params.id].longURL);
+  } else {
+    res.status(404).send("Whoops! you have entered an invalid link.");
+  }
   
 });
 
@@ -187,7 +187,7 @@ app.get("/login", (req, res) => {
   const user = req.session.user_id;
 
   if (user) {
-    res.redirect("/urls")
+    res.redirect("/urls");
   } else {
     const templateVars = { user: users[user]};
     res.render("login", templateVars);
@@ -201,10 +201,6 @@ app.post("/login", (req, res) => {
   let password = req.body.password;
   let userId;
  
-  const user = req.session.user_id;
-  const templateVars = { user: users[user] };
-  
-
   if (!getUserByEmail(email, users)) {
     return res.status(403).send("User not found");
   } else {
@@ -221,7 +217,7 @@ app.post("/login", (req, res) => {
 });
 // Logout post logic to clear the cookie and redirect the user to the login page.
 app.post("/logout", (req, res) => {
-  req.session = null; 
+  req.session = null;
   res.redirect("/login");
 });
 

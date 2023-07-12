@@ -1,14 +1,14 @@
 const urlsForUser = (id, urlDatabase) => {
   const usersURLData = {};
   
-for (let shortURLS in urlDatabase) {
-if (urlDatabase[shortURLS].user === id) {
-  usersURLData[shortURLS] = urlDatabase[shortURLS];
+  for (let shortURLS in urlDatabase) {
+    if (urlDatabase[shortURLS].user === id) {
+      usersURLData[shortURLS] = urlDatabase[shortURLS];
 
-}
-}
-console.log("usersURLData: ", usersURLData);
-return usersURLData;
+    }
+  }
+  console.log("usersURLData: ", usersURLData);
+  return usersURLData;
 };
 
 const getUserByEmail = (email, users) => {
@@ -20,7 +20,7 @@ const getUserByEmail = (email, users) => {
   return undefined;
 };
 
-function generateRandomString() {
+const generateRandomString = function()  {
   let shortUrl = "";
   const characters =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -30,6 +30,6 @@ function generateRandomString() {
     );
   }
   return shortUrl;
-}
+};
 
 module.exports = { getUserByEmail, generateRandomString, urlsForUser };
