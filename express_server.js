@@ -156,19 +156,22 @@ app.get("/urls/:id", (req, res) => {
     res.status(404).send("Whoops! you have entered an invalid link.");
   }
 });
-
+// This is the logic to update the URL in the database.
 app.post("/urls/:id", (req, res) => {
   const user = req.session.user_id;
+ 
   if (urlDatabase[req.params.id]) {
     if (urlDatabase[req.params.id].user === user) {
       urlDatabase[req.params.id].longURL = req.body.longURL;
       res.redirect(`/urls`);
+    // user is not logged in and tries to edit a URL that does not belong to them.
     } else if (!user) {
       res.status(401).send("Only registered users can edit their URLs");
     } else if (urlDatabase[req.params.id].user !== user) {
       res.status(401).send("You can only edit your own URLs");
     }
   } else {
+    // user tries to edit a URL that does not exist.
     res.status(404).send("Whoops! you have entered an invalid link.");
   }
 });
@@ -207,7 +210,7 @@ app.get("/u/:id", (req, res) => {
   
 });
 
-// Routing for login: If the user is not logged in, they will be redirected to the login page. If the user is logged in, they will be redirected to the urls page.
+// Routing for login: If the user is not logged in, they will be redirected to the login page. If the user is logged in, they will be redirected to the urls page.s
 app.get("/login", (req, res) => {
   const user = req.session.user_id;
 
