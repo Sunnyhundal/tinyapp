@@ -23,3 +23,7 @@ The goal of this project is to build a multipage application that helps demonstr
 
 - Install all dependencies (using the `npm install` command).
 - Run the development web server using the `node express_server.js` or  `npm start` commands.
+
+### Note
+
+- You will need to enter long urls in the `https //www.example.com format to work with this project.
