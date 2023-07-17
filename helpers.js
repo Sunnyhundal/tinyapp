@@ -7,7 +7,6 @@ const urlsForUser = (id, urlDatabase) => {
 
     }
   }
-  console.log("usersURLData: ", usersURLData);
   return usersURLData;
 };
 

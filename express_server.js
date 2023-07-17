@@ -3,9 +3,8 @@ const express = require("express");
 const cookieSession = require("cookie-session");
 const morgan = require("morgan");
 const bcrypt = require("bcryptjs");
-const { getUserByEmail } = require("./helpers");
-const { generateRandomString } = require("./helpers");
-const { urlsForUser } = require("./helpers");
+const { getUserByEmail, generateRandomString, urlsForUser } = require("./helpers");
+
 
 
 
@@ -43,10 +42,20 @@ let users = {
   },
 };
 
+
+
+
+
 // Root page redirect to login page.
 app.get("/", (req, res) => {
-  res.redirect("/login");
+  
+  if (req.session.user_id) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
+
 
 // Renders the main page with the shortURL and longURL of the user. If user is not logged in, they are redirected to the login page.
 app.get("/urls", (req, res) => {
@@ -138,13 +147,32 @@ app.get("/urls/:id", (req, res) => {
         user: users[req.session.user_id],
       };
       res.render("urls_show", templateVars);
-    } else {
-      res.status(401).send("Sorry, only registered users can edit their URLs");
+    } else if (!user) {
+      res.status(401).send("Only registered users can edit their URLs");
+    } else if (urlDatabase[req.params.id].user !== user) {
+      res.status(401).send("You can only edit your own URLs");
     }
   } else {
     res.status(404).send("Whoops! you have entered an invalid link.");
   }
 });
+
+app.post("/urls/:id", (req, res) => {
+  const user = req.session.user_id;
+  if (urlDatabase[req.params.id]) {
+    if (urlDatabase[req.params.id].user === user) {
+      urlDatabase[req.params.id].longURL = req.body.longURL;
+      res.redirect(`/urls`);
+    } else if (!user) {
+      res.status(401).send("Only registered users can edit their URLs");
+    } else if (urlDatabase[req.params.id].user !== user) {
+      res.status(401).send("You can only edit your own URLs");
+    }
+  } else {
+    res.status(404).send("Whoops! you have entered an invalid link.");
+  }
+});
+
 
 
 // URL update post logic to update the URL in the database.
@@ -171,7 +199,8 @@ app.post("/urls/:id/delete", (req, res) => {
 // Routing for shortURLs: If the shortURL does not exist, the user will be redirected to an error page. If the shortURL exists, the user will be redirected to the longURL.
 app.get("/u/:id", (req, res) => {
   if (urlDatabase[req.params.id]) {
-    res.redirect(urlDatabase[req.params.id].longURL);
+    const longURL = urlDatabase[req.params.id].longURL;
+    res.redirect(longURL);
   } else {
     res.status(404).send("Whoops! you have entered an invalid link.");
   }
