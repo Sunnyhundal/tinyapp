@@ -1,6 +1,15 @@
+<!-- FILEPATH: /Users/sunny/lighthouse/tinyapp/views/partials/_header.ejs -->
+<!--
+  This is the header partial for the TinyApp application.
+  It contains the navigation bar with links to different pages and user authentication options.
+  The header is included in multiple views to provide consistent navigation across the application.
+-->
 <header>
+  <!-- Navigation bar -->
   <nav class="navbar navbar-expand-md navbar-dark bg-success">
+    <!-- Brand logo -->
     <a class="navbar-brand" href="/urls">TinyApp</a>
+    <!-- Toggler button for mobile view -->
     <button
       class="navbar-toggler"
       type="button"
@@ -12,26 +21,31 @@
     >
       <span class="navbar-toggler-icon"></span>
     </button>
+    <!-- Navigation links -->
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
+    <!-- User authentication options -->
     <div class="form-group mb-2">
-        <% if (user) { %>
-          <div class="navbar-nav">
+      <% if (user) { %>
+        <!-- Display user email when logged in -->
+        <div class="navbar-nav">
           <a class="navbar-text">logged in as <%= user.email %></a>
-        <form class="form-right" action="/logout" method="POST">
-          <button class="btn btn-outline-dark" style="margin-left:20px">Logout</button>
-        </div>
-      </form>
-        <% } else {%>
+          <!-- Logout form -->
+          <form class="form-right" action="/logout" method="POST">
+            <button class="btn btn-outline-dark" style="margin-left:20px">Logout</button>
+          </div>
+        </form>
+      <% } else {%>
+        <!-- Display login and register links when not logged in -->
         <div class="navbar-nav">
           <a class="nav-item nav-link" href="/login">Login</a>
           <a class="nav-item nav-link" href="/register">Register</a>
         </div>
-              <% } %>
-            
+      <% } %>
+    </div>
   </nav>
 </header>
