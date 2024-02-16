@@ -3,10 +3,11 @@ const express = require("express");
 const cookieSession = require("cookie-session");
 const morgan = require("morgan");
 const bcrypt = require("bcryptjs");
-const { getUserByEmail, generateRandomString, urlsForUser } = require("./helpers");
-
-
-
+const {
+  getUserByEmail,
+  generateRandomString,
+  urlsForUser,
+} = require("./helpers");
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -16,9 +17,15 @@ const saltRounds = 10;
 //gensaltSync for bcrypt to generate a salt
 const salt = bcrypt.genSaltSync(saltRounds);
 
-app.use(express.urlencoded({ extended: true }), cookieSession({name: "session",
-  keys: [generateRandomString()], maxAge: 24 * 60 * 60 * 1000 // cookie expires after 24 hours
-}), morgan("dev"));
+app.use(
+  express.urlencoded({ extended: true }),
+  cookieSession({
+    name: "session",
+    keys: [generateRandomString()],
+    maxAge: 24 * 60 * 60 * 1000, // cookie expires after 24 hours
+  }),
+  morgan("dev")
+);
 
 app.set("view engine", "ejs");
 
@@ -42,20 +49,21 @@ let users = {
   },
 };
 
-
-
-
-
 // Root page redirect to login page.
 app.get("/", (req, res) => {
-  
   if (req.session.user_id) {
     res.redirect("/urls");
   } else {
-    res.redirect("/login");
+    res.redirect("/landing");
   }
 });
 
+// Landing page for users who are not logged in.
+app.get("/landing", (req, res) => {
+  const user = req.session.user_id;
+  const templateVars = { user: users[user] };
+  res.render("landing", templateVars);
+});
 
 // Renders the main page with the shortURL and longURL of the user. If user is not logged in, they are redirected to the login page.
 app.get("/urls", (req, res) => {
@@ -66,7 +74,7 @@ app.get("/urls", (req, res) => {
   } else {
     const templateVars = {
       urls: visibleURL,
-      user: users[req.session.user_id]
+      user: users[req.session.user_id],
     };
     res.render("urls_index", templateVars);
   }
@@ -80,7 +88,7 @@ app.post("/urls", (req, res) => {
     const shortUrl = generateRandomString();
     urlDatabase[shortUrl] = {
       urls: req.body.longURL,
-      user: users[req.session.user_id].id
+      user: users[req.session.user_id].id,
     };
     urlDatabase[shortUrl].longURL = req.body.longURL;
     res.redirect(`/urls/${shortUrl}`);
@@ -101,14 +109,13 @@ app.get("/urls/new", (req, res) => {
 // Routing for registration: If user is not logged in, they can register. If they are logged in, they are redirected to the urls page.
 app.get("/register", (req, res) => {
   const user = req.session.user_id;
-  
+
   if (!user) {
     const templateVars = { user: users[user] };
     res.render("register", templateVars);
   } else {
     res.redirect("/urls");
   }
-
 });
 
 // Registration post logic to add new user to the users database. If the email or password is empty, the user will be redirected to an error page. If the email already exists, the user will be redirected to an error page.
@@ -134,7 +141,6 @@ app.post("/register", (req, res) => {
     req.session.user_id = userId;
     res.redirect("/urls");
   }
-
 });
 //Shows page with shortURL and longURL and edit option.
 app.get("/urls/:id", (req, res) => {
@@ -159,12 +165,12 @@ app.get("/urls/:id", (req, res) => {
 // This is the logic to update the URL in the database.
 app.post("/urls/:id", (req, res) => {
   const user = req.session.user_id;
- 
+
   if (urlDatabase[req.params.id]) {
     if (urlDatabase[req.params.id].user === user) {
       urlDatabase[req.params.id].longURL = req.body.longURL;
       res.redirect(`/urls`);
-    // user is not logged in and tries to edit a URL that does not belong to them.
+      // user is not logged in and tries to edit a URL that does not belong to them.
     } else if (!user) {
       res.status(401).send("Only registered users can edit their URLs");
     } else if (urlDatabase[req.params.id].user !== user) {
@@ -175,8 +181,6 @@ app.post("/urls/:id", (req, res) => {
     res.status(404).send("Whoops! you have entered an invalid link.");
   }
 });
-
-
 
 // URL update post logic to update the URL in the database.
 app.post("/urls/:id/update", (req, res) => {
@@ -196,7 +200,6 @@ app.post("/urls/:id/delete", (req, res) => {
   } else {
     res.status(404).send("Whoops! You have entered an invalid link.");
   }
-  
 });
 
 // Routing for shortURLs: If the shortURL does not exist, the user will be redirected to an error page. If the shortURL exists, the user will be redirected to the longURL.
@@ -207,7 +210,6 @@ app.get("/u/:id", (req, res) => {
   } else {
     res.status(404).send("Whoops! you have entered an invalid link.");
   }
-  
 });
 
 // Routing for login: If the user is not logged in, they will be redirected to the login page. If the user is logged in, they will be redirected to the urls page.s
@@ -217,10 +219,9 @@ app.get("/login", (req, res) => {
   if (user) {
     res.redirect("/urls");
   } else {
-    const templateVars = { user: users[user]};
+    const templateVars = { user: users[user] };
     res.render("login", templateVars);
   }
-
 });
 
 // Login post logic to check if the user exists in the database. If the user does not exist, they will be redirected to an error page. Checks if valid users email and password match. If the password does not match, the user will be redirected to an error page.
@@ -228,7 +229,7 @@ app.post("/login", (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
   let userId;
- 
+
   if (!getUserByEmail(email, users)) {
     return res.status(403).send("User not found");
   } else {
