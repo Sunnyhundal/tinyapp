@@ -1,0 +1,12 @@
+version: '1.0'
+
+services:
+  app:
+    image: node:14
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - "8080:8080"
+    command: npm start
